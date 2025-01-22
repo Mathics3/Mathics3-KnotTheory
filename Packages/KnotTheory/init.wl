@@ -1,3 +1,9 @@
+(* Rocky: *)
+(* KnotTheoryDirectory[] = (
+  File /. Flatten[FileInformation[ToFileName[#,"KnotTheory"]] & /@ ($Path /. "." -> Directory[])]
+) *)
+If[Not[ValueQ[$KnotTheoryDirectory]], $KnothTheoryDirectory = Directory[]];
+
 BeginPackage["KnotTheory`"];
 
 KnotTheoryVersion::usage = "
@@ -48,9 +54,7 @@ KnotTheoryVersionString[] = StringJoin[
   ToString[KnotTheoryVersion[6]]
 ]
 
-KnotTheoryDirectory[] = (
-  File /. Flatten[FileInformation[ToFileName[#,"KnotTheory"]] & /@ ($Path /. "." -> Directory[])]
-)
+KnotTheoryDirectory[] = "/src/external-vcs/github/Mathics3/mathics-package-KnotTheory/mathics/packages/KnotTheory";
 
 (* might be dangerous if KnotTheoryDirectory[] is somehow incorrect! *)
 If[!MemberQ[$Path, ParentDirectory[KnotTheoryDirectory[]]],
@@ -1464,7 +1468,7 @@ StrandColour="StrandColour";
 (* Dror: Add line and pd -> pd_PD *)
 DrawPD[L_] := DrawPD[PD[L]]
 DrawPD[L_,options_] := DrawPD[PD[L],options]
-DrawPD[pd_PD]:=(
+(* DrawPD[pd_PD]:=(
     CreditMessage["DrawPD was written by Emily Redelmeier at the University of Toronto in the summers of 2003 and 2004."];
     t=AddPositionsBound[DefaultDirichlet[Triangulate[pd]]];
     t=PutInside[t,DefaultOuterFace[t]];t=Balance[t];
@@ -1473,41 +1477,32 @@ DrawPD[pd_PD,options_]:=(optionsList=Map[Apply[List,#]&,options];
     t=AddPositionsBound[DefaultDirichlet[Triangulate[pd]]];
     t=PutInside[t,
         Which[Length[
-              Select[optionsList,#[[1]]\
-==OuterFace&]]\[Equal]0,DefaultOuterFace[t],
+              Select[optionsList,#[[1]]==OuterFace&]]==0,DefaultOuterFace[t],
           Depth[Select[
-                  optionsList,#[[1]]\
-==OuterFace&][[1,2]]]\[Equal]1,
-          Select[optionsList,#[[1]]\
-==OuterFace&][[1,2]],True,
+                  optionsList,#[[1]]==OuterFace&][[1,2]]]==1,
+          Select[optionsList,#[[1]]==OuterFace&][[1,2]],True,
           GetOuterFace[t,
-            Select[optionsList,#[[1]]\
-==OuterFace&][[1,2]]]]];
+            Select[optionsList,#[[1]]==OuterFace&][[1,2]]]]];
     t=Balance[t];
     graphicsParams={If[
           Length[Select[
-                optionsList,#[[1]]\
-==Gap&]]\[Equal]0,DefaultGap[t],
-          Select[optionsList,#[[1]]\
-==Gap&][[1,2]]]};
+                optionsList,#[[1]]==Gap&]]==0,DefaultGap[t],
+          Select[optionsList,#[[1]]==Gap&][[1,2]]]};
     t=AddGraphicsObjs[t,graphicsParams];
     t=If[Length[
-            Select[optionsList,#[[1]]\
-==Colour&]]\[Equal]0,t,
+            Select[optionsList,#[[1]]==Colour&]]==0,t,
         ColourStrands[t,
           If[Length[
-                Select[optionsList,#[[1]]\
-==StrandColour&]]\[Equal]0,{},
+                Select[optionsList,#[[1]]==StrandColour&]]==0,{},
             MapAt[Position[
                     ListStrands[t],{#+Length[pd],1}][[1,
                   1]]&,
-              Select[optionsList,#[[1]]\
-==StrandColour&][[1,2]],
+              Select[optionsList,#[[1]]==StrandColour&][[1,2]],
               Table[{1,i},{i,
                   Length[Select[
-                        optionsList,#[[1\
-]]==StrandColour&][[1,
+                        optionsList,#[[1]]==StrandColour&][[1,
                       2]]]}]]]]];Draw[t])
+ *)
 
 End[]; EndPackage[]
 (* End source file src/DrawPD.m*)
@@ -2268,7 +2263,7 @@ DTCode[K_] /; !MatchQ[Head[K], DTCode|GaussCode|String] := DTCode[GaussCode[K]]
 
 (* This function translates the string representations of DT codes used in the Knot Atlas back to KnotTheory's standard representation of a DT code. *)
 DTCode[S_String]:=
-  DTCode@@ToExpression["{"<>StringReplace[S," "\[Rule]","]<>"}"]
+  DTCode@@ToExpression["{"<>StringReplace[S," "->","]<>"}"]
 
 End[]; EndPackage[]
 (* End source file src/GaussCode.m*)
@@ -2289,7 +2284,7 @@ PD[GaussCode[]] = PD[Loop[1]]
 
 PD[in_GaussCode] :=
     Module[ {chords=List@@in,
-        int = Range[Max[List@@in]] /. x_Integer \[Rule] {},
+        int = Range[Max[List@@in]] /. x_Integer -> {},
         dirlist = Table[0, {Max[List@@in]}], edgelist, output={}, ol={{}} },
 
       CreditMessage["The GaussCode to PD conversion was written by Siddarth Sankaran at the University of Toronto in the summer of 2005."];
@@ -2316,8 +2311,7 @@ PD[in_GaussCode] :=
           etemp = edgelist;
           {c1, c2} = {Position[chords, -k], Position[chords,k]};
 
-          If[c1[[1,1]] \[Equal]
-              c2[[1,1]], (*same component *)
+          If[c1[[1,1]] == c2[[1,1]], (*same component *)
             {p1,
                 p2} = {Min[c1[[1,2]], c2[[1,2]] ],
                 Max[c1[[1,2]], c2[[1,2]] ] };
@@ -2356,7 +2350,7 @@ PD[in_GaussCode] :=
             {a,b} = Flatten[Position[Abs[chords], k] ];
             For[j = 1, j \[LessEqual] Max[chords], j++,
 
-              If[Count[Take[Abs[chords], {a+1, b-1}], j] \[Equal] 1,
+              If[Count[Take[Abs[chords], {a+1, b-1}], j] == 1,
                   AppendTo[int[[k]],j] ];
               ];
             ];
@@ -2367,12 +2361,12 @@ PD[in_GaussCode] :=
       Module[{s, l, mirror, p,d,ch},
         s[1] = -1;s[-1] = 1; s[0]=0;
         dirlist[[1]] =
-          If[Head[in[[1]]]=== Integer || Length[in] \[Equal] 1, -1,
+          If[Head[in[[1]]]=== Integer || Length[in] == 1, -1,
             1]; (*1st edge up *)
 
         mirror = l = Table[{dirlist[[i]], i}, {i, Length[dirlist]}];
 
-        l = l //. {x_Integer, i_Integer}/;x\[Equal] 0 \[RuleDelayed] (
+        l = l //. {x_Integer, i_Integer}/;x== 0 := (
                 d = Table[ mirror[[n,1]], {n, Length[l]}];
                 p = Position[ Abs[ d[[ int[[i]] ]] ] , 1];
 
@@ -2381,7 +2375,7 @@ PD[in_GaussCode] :=
                   mirror[[i]] = {s[d[[ ch ]] ],i};{s[d[[ch]] ],i},
                   mirror[[i]] = {0,i};{0,i}]  );
 
-        dirlist = l /. {x_, y_} \[Rule] x;
+        dirlist = l /. {x_, y_} -> x;
 
         ];
 
@@ -2397,7 +2391,7 @@ PD[in_GaussCode] :=
                 Position[chords,k][[1,1]]};
             {{x,y}, {a,b}} = {edgelist[[p1]],edgelist[[p2]]};
 
-            l=If[dirlist[[k]] \[Equal] 1, {x,b,a,y},{x,y,a,
+            l=If[dirlist[[k]] == 1, {x,b,a,y},{x,y,a,
                   b}];  (*in right or in left*)
             l = RotateLeft[l, Position[l, inunder][[1,1]] -1 ];
             AppendTo[output, Apply[X, l]];
@@ -2657,7 +2651,7 @@ WikiTextQ[
 WikiForm /: ToString[s_String, WikiForm] := If[WikiTextQ[s],s,
     StringReplace[
       "<nowiki>"<>s<>"</nowiki>",
-      {"|" \[Rule] "&#124;"}
+      {"|" -> "&#124;"}
       ]
     ]
 
@@ -2679,14 +2673,14 @@ listToString[x_List,s_String]:=
 WikiForm/:ToString[gc_GaussCode,WikiForm]:=listToString[List@@gc,", "]
 
 WikiForm/:ToString[dtc_DTCode,WikiForm]:=
-  If[Length[dtc]\[Equal]0,"",listToString[List@@dtc," "]]
+  If[Length[dtc]==0,"",listToString[List@@dtc," "]]
 
 WikiForm/:ToString[NotAvailable,WikiForm]="";
 WikiForm/:ToString[_NotAvailable,WikiForm]="";
 
 WikiForm/:ToString[X[i_,j_,k_,l_],WikiForm]:=
   Module[{i1=ToString[i],j1=ToString[j],k1=ToString[k],l1=ToString[l]},
-    If[{1,1,1,1}\[Equal]StringLength/@{i1,j1,k1,l1},
+    If[{1,1,1,1}==StringLength/@{i1,j1,k1,l1},
       ToString[StringForm["X<sub>````````</sub>",i1,j1,k1,l1]],
       ToString[StringForm["X<sub>``,``,``,``</sub>",i1,j1,k1,l1]]]]
 
@@ -2723,7 +2717,7 @@ WikiForm/:ToString[poly_?LaurentPolynomialQ,WikiForm]:=
 
 
 WikiTeXForm/:ToString[a_,WikiTeXForm]:=
-  StringReplace[ToString[a,TeXForm],"\\text{"\[Rule]"\\textrm{"]
+  StringReplace[ToString[a,TeXForm],"\\text{"->"\\textrm{"]
 
 WikiForm/:ToString[a_,WikiForm]:=MathTags[ToString[a,WikiTeXForm]]
 
@@ -2742,7 +2736,7 @@ SplitMonomial[x_?MonomialQ]:=If[MatchQ[x,_Times],List@@x,{x}]
 
 MonomialStringQ[x_String]:=
   MonomialQ[
-    ToExpression[StringReplace[x,{"{"\[Rule]"(","}"\[Rule]")"}],InputForm]]
+    ToExpression[StringReplace[x,{"{"->"(","}"->")"}],InputForm]]
 
 MonomialStringQ[_]:=False;
 
@@ -2756,14 +2750,17 @@ LaurentPolynomialQ[x_Plus]:=And@@(MonomialQ/@List@@x)
 IfNotOne["1"]="";
 IfNotOne[x_String]:=x
 
+(* rocky:
+SetDelayed::write: Tag StringExpression in \frac{ ~~ numerator : ShortestMatch[__] ~~ }{ ~~ denominator : ShortestMatch[__] ~~ } ~~ rest : + ❘ - ❘ EndOfString is Protected.
+
 LaurentPolynomialTeXReplacementRule=
     "\\frac{"~StringExpression~(numerator:ShortestMatch[__])~StringExpression~
         "}{"~StringExpression~(denominator:ShortestMatch[__])~
         StringExpression~"}"~
-        StringExpression~(rest:("+"|"-"|EndOfString))\[RuleDelayed]
+        StringExpression~(rest:("+"|"-"|EndOfString)):=
       IfNotOne[numerator] ~StringExpression~" "~StringExpression~
         InvertMonomialString[denominator]~StringExpression~rest;
-
+ *)
 
 
 
@@ -3717,7 +3714,7 @@ Cup::usage=Cap::usage=Up::usage=Down::usage=Over::usage=Under::usage=MorseLink::
 Begin["`MorseLink`"];
 
 GetDir[a_,b_] :=
-    If[Max[a,b] \[Equal] (Min[a,b] +1),
+    If[Max[a,b] == (Min[a,b] +1),
       If[a<b, Return[Up], Return[Down]],
       If[a<b, Return[Down], Return[Up]]];
 
@@ -3760,8 +3757,8 @@ at the University of Toronto in the summer of 2005."];
 
         {d1,d2} = {GetDir[ in[[1,1]] , in[[1,3]] ],
             GetDir[ in[[1,2]], in[[1,4]] ]};
-        If[TrueQ[d1 \[Equal] Up], output={Cup[1,2]}, output = {Cup[2,1]}];
-        If[TrueQ[d2 \[Equal] Up], AppendTo[output,Cup[4,3] ] ,
+        If[TrueQ[d1 == Up], output={Cup[1,2]}, output = {Cup[2,1]}];
+        If[TrueQ[d2 == Up], AppendTo[output,Cup[4,3] ] ,
           AppendTo[output, Cup[3,4] ] ];
         AppendTo[output, X[ 2, Under, d1,d2 ] ] ;
         strands = {in[[1,1]], in[[1,4]], in[[1,3]], in[[1,2]]};
@@ -3794,11 +3791,11 @@ at the University of Toronto in the summer of 2005."];
                 Partition[strands,2,1], {x_,x_}];
           If[Length[adjpos] \[NotEqual] 0,
 
-            If[TrueQ[dirlist[[ adjpos[[1,1]] ]] \[Equal] Up],
+            If[TrueQ[dirlist[[ adjpos[[1,1]] ]] == Up],
 
               output =
                 Append[output,Cap[ adjpos[[1,1]], adjpos[[1,1]] + 1 ] ] ];
-            If[TrueQ[dirlist[[ adjpos[[1,1]] ]] \[Equal] Down],
+            If[TrueQ[dirlist[[ adjpos[[1,1]] ]] == Down],
 
               output =
                 Append[output, Cap[ adjpos[[1,1]] + 1, adjpos[[1,1]] ] ] ];
@@ -3830,7 +3827,7 @@ at the University of Toronto in the summer of 2005."];
                         pos = Position[Partition[strands, 2, 1], {x,y}][[1,
                               1]];
 
-                        If[Mod[n,2] \[Equal] 1, overunder=Under,
+                        If[Mod[n,2] == 1, overunder=Under,
                           overunder=Over];
                         {dx,dy} = {GetDir[x,b], GetDir[y,a]};
                         output = Append[output, X[pos, overunder, dx, dy] ];
@@ -3858,10 +3855,10 @@ at the University of Toronto in the summer of 2005."];
 strand list, such that the adjacent edge does not *)
               For[m = 1, m \[LessEqual] Length[in], m++,
                   For[n=1, n\[LessEqual] 4, n++,
-                      If[cflag\[Equal]0,
+                      If[cflag==0,
 
                           If[
-                              Length[Position[strands, in[[m,n]] ] ] \[Equal]
+                              Length[Position[strands, in[[m,n]] ] ] ==
                                 1 ,
                               If[ !MemberQ[strands, in[[m, s4[n] ]]],
                                   cflag=1;
@@ -3870,11 +3867,11 @@ strand list, such that the adjacent edge does not *)
                                       in[[m, s4[s4[n]] ]]};
                                   pos = Position[strands, x][[1,1]];
 
-                                  If[Mod[n,2] \[Equal]1, overunder = Under,
+                                  If[Mod[n,2] ==1, overunder = Under,
                                     overunder=Over];
                                   {dx,dy} = {GetDir[x,b], GetDir[y,a]};
 
-                                  If[TrueQ[dy \[Equal] Up],
+                                  If[TrueQ[dy == Up],
                                     output=Append[output, Cup[pos+2,pos+1]];
                                     opdy = Down;,
                                     output = Append[output,Cup[pos+1,pos+2]];
@@ -3905,7 +3902,7 @@ strand list, such that the adjacent edge does not *)
 
           ];
         (* maybe there's more components, setup the next one *)
-        (*If[(strands \[Equal] {}) && (in \[NotEqual]  {}),
+        (*If[(strands == {}) && (in \[NotEqual]  {}),
 
               output =
                 Flatten[
@@ -3938,7 +3935,7 @@ orientation arrows. ";
 DrawMorseLink::about = "DrawMorseLink was written by Siddarth Sankaran
 at the University of Toronto in the summer of 2005."
 
-Options[DrawMorseLink] = {Gap \[Rule] 0.4, ArrowSize \[Rule] 0.5};
+Options[DrawMorseLink] = {Gap -> 0.4, ArrowSize -> 0.5};
 
 Begin["`DrawMorseLink`"];
 
@@ -3947,7 +3944,7 @@ DrawMorseLink[in_, opts___]/; Head[in] =!= MorseLink := DrawMorseLink[MorseLink[
 DrawMorseLink[ml_MorseLink, opts___] :=
     Module[ {in={{}}, output={}, ch=1, cw=1,  dline, dcup, dcap, dslant,
         l, Edge, Mid, lc,
-        as =(ArrowSize *0.25) /. {opts} /. If[Count[ml, _X] \[LessEqual] 4, ArrowSize \[Rule] 0.2, Options[DrawMorseLink] ],
+        as =(ArrowSize *0.25) /. {opts} /. If[Count[ml, _X] \[LessEqual] 4, ArrowSize -> 0.2, Options[DrawMorseLink] ],
         crgap=(0.5- Gap/2) /. {opts} /. Options[DrawMorseLink] },
 
 	CreditMessage["DrawMorseLink was written by Siddarth Sankaran
@@ -4005,14 +4002,14 @@ at the University of Toronto in the summer of 2005."];
 
         (*first pass - cups fixed*)
         l = List@@ml/.{
-                X[a_,c___] \[RuleDelayed] X[str[[a]],str[[a+1]],c],
+                X[a_,c___] := X[str[[a]],str[[a+1]],c],
 
-                Cap[a_, b_] \[RuleDelayed] ({x,y} = {str[[a]], str[[b]]};
+                Cap[a_, b_] := ({x,y} = {str[[a]], str[[b]]};
                     pos = Min[a,b];
                     str = Delete[str, {{a}, {b}}];
                     Cap[x,y]),
 
-                Cup[a_, b_] \[RuleDelayed]
+                Cup[a_, b_] :=
                   (pos = Min[a,b];
 
                     If[(Length[str] \[NotEqual]0) && (pos >  Length [str] || pos == 1), (*edge of diagram*)
@@ -4033,7 +4030,7 @@ at the University of Toronto in the summer of 2005."];
                           str = Insert[ Insert[str, s2, pos], s1, pos];
                           ];
                       ];
-                    If[Length[str] \[Equal] 0, str = {ch, 2*ch};t=Edge];
+                    If[Length[str] == 0, str = {ch, 2*ch};t=Edge];
                     Cup[str[[a]], str[[b]],t ]
                     )
                 };
@@ -4047,7 +4044,7 @@ at the University of Toronto in the summer of 2005."];
           If[a\[LessEqual] p1, a-1, If[a\[GreaterEqual] p2, a+1]];
         m=t = Table[{l[[i]], i}, {i, Length[l]}];
         If[Length[caps] \[NotEqual] 0,
-          t = t /. {a_[b_, c_, d___], n_} \[RuleDelayed] (
+          t = t /. {a_[b_, c_, d___], n_} := (
                     ac = Cases[caps, {i_} /; i > n];
 
                     pos = {Min[m[[#,1,1]], m[[#,1,2]]],
@@ -4060,16 +4057,16 @@ at the University of Toronto in the summer of 2005."];
 
         Module[ {temp, k=0, ar, prod=1,prev, next, i, cur},
 
-          t = t  /. {X[a_, b_, c_, ___] \[RuleDelayed]
+          t = t  /. {X[a_, b_, c_, ___] :=
                   X[a,b,c,temp[++k], temp[++k] ],
-                Cup[a_, b_, c_] \[RuleDelayed]  Cup[a, b, temp[++k], c],
-                Cap[a_, b_] \[RuleDelayed]  Cap[a,b, temp[++k]]};
+                Cup[a_, b_, c_] :=  Cup[a, b, temp[++k], c],
+                Cap[a_, b_] :=  Cap[a,b, temp[++k]]};
 
           next[str_, pos_] := Module[ {p},
 
               p= First[
                     Cases[t, {_[a_, b_, ___],
-                          i_} /; (a== str || b\[Equal]str)&& i>pos]][[1]];
+                          i_} /; (a== str || b==str)&& i>pos]][[1]];
 
               Switch[Head[p],Cap, p[[3]],X,
                 If[p[[1]] === str, p[[4]], p[[5]] ]   ]    ];
@@ -4089,12 +4086,12 @@ at the University of Toronto in the summer of 2005."];
             ];
 
           prod = prod //.
-              ar[a___, b_, c___]*ar[d___, b_, f___] \[RuleDelayed]
+              ar[a___, b_, c___]*ar[d___, b_, f___] :=
                 DeleteCases[ar[a,b,c,d,f], {}];
-          prod = List@@prod /. ar \[Rule] List;
+          prod = List@@prod /. ar -> List;
           If[Head[prod[[1]]] =!= List, prod = {prod}];
           t= t /. Flatten[
-                Table[prod[[i,j]] \[Rule] lc[i], {i, Length[prod]}, {j,
+                Table[prod[[i,j]] -> lc[i], {i, Length[prod]}, {j,
                     Length[prod[[i]]]}]];
           ];
         l = Table[t[[i,1]] , {i, Length[t]}] ;
@@ -4111,7 +4108,7 @@ at the University of Toronto in the summer of 2005."];
 
               While[i>0 &&
                   Apply[And, FreeQ[in[[i]], #, 2]& /@ Range[p1, p2] ], --i];
-              If[i\[Equal]Length[in], AppendTo[in, {}] ];
+              If[i==Length[in], AppendTo[in, {}] ];
               AppendTo[in[[i+1]], cur];,
               _,
               i= Length[in];
@@ -4123,7 +4120,7 @@ at the University of Toronto in the summer of 2005."];
                   FreeQ[ Union@@ (Range[Min[#[[1]], #[[2]]],
                               Max[#[[1]], #[[2]]]]&/@in[[i]]), cur[[2]] ] &&
                   Apply[And, FreeQ[in[[i]], #, 2]& /@ Range[p1, p2]]  , i--];
-              If[i \[Equal] Length[in] , AppendTo[in,{}]];
+              If[i == Length[in] , AppendTo[in,{}]];
               AppendTo[in[[i+1]], cur];
 
               ];
@@ -4215,9 +4212,9 @@ at the University of Toronto in the summer of 2005."];
               _X,
               strands =
                   strands /. {{x_, c_} /;
-                          x \[Equal] in[[i,j,1]] \[RuleDelayed] {x,
+                          x == in[[i,j,1]] := {x,
                           in[[i,j,5]]}, {x_, c_} /;
-                          x \[Equal] in[[i,j,2]] \[RuleDelayed] {x,
+                          x == in[[i,j,2]] := {x,
                           in[[i,j,4]]}};
               ];
             ];
@@ -5887,7 +5884,7 @@ BWReg[K_PD]:=Module[
         i=K[[p,1]]; j= K[[p,2]];
         k=K[[p,3]]; l=K[[p,4]];
         jleft=-1; jright=0;
-        If[Or[(l>j)&&(l=!=2*nc),(l>j)&&(j=!=1),(l\[Equal]1)&&(j=!=2)],
+        If[Or[(l>j)&&(l=!=2*nc),(l>j)&&(j=!=1),(l==1)&&(j=!=2)],
           jleft=0;
           jright=-1];
         matches[[4p-3]]={b[2*i],b[2*j+jright]};
@@ -5897,17 +5894,17 @@ BWReg[K_PD]:=Module[
         ];
 
       For[i=1,i<4nc+1,i++,
-        edges=edges /. matches[[i,2]]\[Rule]matches[[i,1]];
-        vertices=vertices /. matches[[i,2]]\[Rule]matches[[i,1]];
-        idT=idT /. matches[[i,2]]\[Rule]matches[[i,1]];
-        matches=matches /. matches[[i,2]]\[Rule]matches[[i,1]];
+        edges=edges /. matches[[i,2]]->matches[[i,1]];
+        vertices=vertices /. matches[[i,2]]->matches[[i,1]];
+        idT=idT /. matches[[i,2]]->matches[[i,1]];
+        matches=matches /. matches[[i,2]]->matches[[i,1]];
         ];
 
       regs=Union[idT];
       For[i=1,i<Length[regs]+1,i++,
-        edges=edges /. regs[[i]]\[Rule]i;
-        vertices=vertices /. regs[[i]]\[Rule]i;
-        matches=matches /. regs[[i]]\[Rule]i;
+        edges=edges /. regs[[i]]->i;
+        vertices=vertices /. regs[[i]]->i;
+        matches=matches /. regs[[i]]->i;
         ];
       {Length[regs],edges,vertices}];
 
@@ -5917,11 +5914,11 @@ KStates[K_PD,rut_]:=Module[
       Placer[pos_,used_]:=Module[
           {i,vtx,nused},
           vtx=Length[pos]+1;
-          If[vtx\[Equal]cr+1,
+          If[vtx==cr+1,
             StateList=Append[StateList,pos],
             For[i=1,i<5,i++,
                 tr = vdat[[vtx,i]];
-                If[used[[tr]]\[Equal]0,
+                If[used[[tr]]==0,
                   nused=used;
                   nused[[tr]]=1;
                   Placer[Append[pos,i],nused]]
@@ -5942,7 +5939,7 @@ KStates[K_PD,rut_]:=Module[
 crs[s_X]:=Module[
       {t},
       t=1;
-      If[Or[s[[2]]\[Equal](s[[4]]-1),(s[[4]]\[Equal]1)&&(s[[2]]=!=2)],t=-1];
+      If[Or[s[[2]]==(s[[4]]-1),(s[[4]]==1)&&(s[[2]]=!=2)],t=-1];
       t];
 
 AlexGr[state_,K_PD]:=Module[
@@ -5988,17 +5985,17 @@ Domain[K_PD,state_,rut_]:=Module[
       domc=Table[{0,0},{2*nc}];
       lc={0,0};
       edge=rut; flag=0;
-      While[(edge=!=rut)||(flag\[Equal]0),
+      While[(edge=!=rut)||(flag==0),
         vtx=0;
         For[i=1,i<nc+1,i++,
           For[j=1,j<5, j++,
-              If[(K[[i,j]]\[Equal]edge)&&(K[[i,Mod[j+2,4,1]]]\[Equal]
+              If[(K[[i,j]]==edge)&&(K[[i,Mod[j+2,4,1]]]==
                         succ[edge]),
                   vtx=i; cor=j;
                   ];
               ];
           ];
-        If[vtx\[Equal]0,Print["vertex not found!"]];
+        If[vtx==0,Print["vertex not found!"]];
         lc=lc+{A[[cor,state[[vtx]]]],B[[cor,state[[vtx]]]]};
         edge=succ[edge];
         domc[[edge]]=lc;
@@ -6038,7 +6035,7 @@ SmallDisk[dom_]:=Module[
       flag=2;
       For[i=1,i<Length[dom]+1,i++,
         x=dom[[i]];
-        If[(x\[Equal]{0,2})||(x\[Equal]{2,0}),flag=flag-1,
+        If[(x=={0,2})||(x=={2,0}),flag=flag-1,
           If[(x=!={0,0}), flag=0]
           ];
         ];
@@ -6050,10 +6047,10 @@ BigDisk[dom_]:=Module[
       flag=3;
       For[i=1,i<Length[dom]+1,i++,
         x=dom[[i]];
-        If[x\[Equal]{0,2},If[flag>1, flag=2,flag=0],
+        If[x=={0,2},If[flag>1, flag=2,flag=0],
 
-          If[x\[Equal]{2,0},
-              If[(flag\[Equal]3)||(flag\[Equal]1), flag=1, flag=0],
+          If[x=={2,0},
+              If[(flag==3)||(flag==1), flag=1, flag=0],
               If[x=!={0,0}, flag=0]
               ];
           ];
@@ -6064,7 +6061,7 @@ Comparer[K_PD,rut_,ag_,dflag_]:=Module[
       {Y,i,j,maxg,ming,Z,t,loc,dto,sdto,bdto,rd},
 
       Y=SortedStates[K,rut];
-      Z=Select[Y,#[[1]]\[Equal]ag&];
+      Z=Select[Y,#[[1]]==ag&];
 
       CTest[x_,y_]:=SCompare[K,rut,Z[[x,3]],Z[[y,3]]];
       CDom[x_,y_]:=RelDom[K,rut,Z[[x,3]],Z[[y,3]]];
@@ -6078,21 +6075,21 @@ Comparer[K_PD,rut_,ag_,dflag_]:=Module[
       loc=Length[Z];
       For[i=maxg,i>ming,i--,
         Print["Homological Grading ",i];
-        While[Z[[loc,2]]\[Equal]i,
+        While[Z[[loc,2]]==i,
           dto={}; sdto={}; bdto={};
           For[j=1,j<Length[Z]+1,j++,
-            If[(Z[[j,2]]\[Equal]i-1)&&(CTest[loc,j]\[Equal]1),
+            If[(Z[[j,2]]==i-1)&&(CTest[loc,j]==1),
                 dto=Append[dto,j];
                 rd = CDom[loc,j];
-                If[SmallDisk[rd]\[Equal]1,sdto=Append[sdto,j]];
+                If[SmallDisk[rd]==1,sdto=Append[sdto,j]];
                 If[BigDisk[rd]>0,bdto=Append[bdto,j]];
-                If[dflag[[4]]\[Equal]1, Print[loc,"   ",j];
+                If[dflag[[4]]==1, Print[loc,"   ",j];
                   Print[Diff[K,rut,ag,loc,j]]];
                 ];
             ];
-          If[dflag[[3]]\[Equal]1,Print[loc,"  ",dto]];
-          If[dflag[[1]]\[Equal]1,Print[loc,"  ",sdto]];
-          If[dflag[[2]]\[Equal]1,Print[loc,"  ",bdto]];
+          If[dflag[[3]]==1,Print[loc,"  ",dto]];
+          If[dflag[[1]]==1,Print[loc,"  ",sdto]];
+          If[dflag[[2]]==1,Print[loc,"  ",bdto]];
           loc--];
         ];
 
@@ -6102,7 +6099,7 @@ Diff[K_PD,rut_,ag_,n_,m_]:=Module[
       {Z},
 
       Y=SortedStates[K,rut];
-      Z=Select[Y,#[[1]]\[Equal]ag&];
+      Z=Select[Y,#[[1]]==ag&];
       RelDom[K,rut,Z[[n,3]],Z[[m,3]]]];
 
 NStat[K_PD,ag_]:=Module[
@@ -6112,7 +6109,7 @@ NStat[K_PD,ag_]:=Module[
       For[i=1, i<2*Length[K]+1,i++,
         If[AlexP[K,i]=!=A,Print["Error in NStat"]];
         Y=SortedStates[K,i];
-        Z=Select[Y,#[[1]]\[Equal]ag&];
+        Z=Select[Y,#[[1]]==ag&];
         Print[i,"   ",Length[Z]];
         ];
       0];
@@ -6126,7 +6123,7 @@ StatD[K_PD,agmin_,agmax_]:=Module[
         Y=SortedStates[K,i];
         Print["Root =",i];
         For[j=agmin, j<agmax+1, j++,
-          Z=Select[Y,#[[1]]\[Equal]j&];
+          Z=Select[Y,#[[1]]==j&];
           Print[j,"   ",Length[Z]];
           ];
         ];
@@ -6149,7 +6146,7 @@ NSupport[a_]:=Module[
 Separated[K_PD,rut_,ag_,hg_,pdisks_,ndisks_]:=
     Module[{Y,Z,i,j,D,big,closegens},
       Y=SortedStates[K,rut];
-      Z=Select[Y,((#[[1]]\[Equal]ag)&&(#[[2]]\[Equal]hg))&];
+      Z=Select[Y,((#[[1]]==ag)&&(#[[2]]==hg))&];
       For[i=1,i<Length[Z]+1,i++,
         closegens={};
         For[j=i+1, j<Length[Z]+1,j++,
@@ -6157,7 +6154,7 @@ Separated[K_PD,rut_,ag_,hg_,pdisks_,ndisks_]:=
 
           big=Union[Complement[PSupport[D],pdisks],
               Complement[NSupport[D],ndisks]];
-          If[big\[Equal]{},closegens = Append[closegens,j]]
+          If[big=={},closegens = Append[closegens,j]]
           ];
         Print[i,"  ",closegens];
         ];
@@ -6170,9 +6167,9 @@ SAGenus[K_PD]:=Module[
       S=Thread[crs[Y]];
       For[i=1,i<Length[Y]+1,i++,
         tcr=Y[[i]];
-        srule={tcr[[4]]\[Rule]tcr[[1]],tcr[[3]]\[Rule]tcr[[2]]};
+        srule={tcr[[4]]->tcr[[1]],tcr[[3]]->tcr[[2]]};
         If[S[[i]]==1,
-          srule={tcr[[2]]\[Rule]tcr[[1]],tcr[[4]]\[Rule]tcr[[3]]}];
+          srule={tcr[[2]]->tcr[[1]],tcr[[4]]->tcr[[3]]}];
         Y=Y/.srule
         ];
       Y=Union[Flatten[Apply[List,Y,{1}]]];
@@ -6183,16 +6180,16 @@ Clik[X_,ClSize_]:=Module[
       {i,j,d,ret,found,nos,ToDiff,FromDiff},
       d=Length[X];
       nos=Table[i,{i,d}];
-      ToDiff=Table[Select[nos,X[[i,#]]\[Equal]0&],{i,d}];
-      FromDiff=Table[Select[nos,X[[#,i]]\[Equal]0&],{i,d}];
+      ToDiff=Table[Select[nos,X[[i,#]]==0&],{i,d}];
+      FromDiff=Table[Select[nos,X[[#,i]]==0&],{i,d}];
       found=0; i=0;
-      While[(i<ClSize+1)&&(found\[Equal]0),
+      While[(i<ClSize+1)&&(found==0),
         S=Subsets[nos,{i}];j=1;
-        While[(j<Length[S]+1)&&(found\[Equal]0),
+        While[(j<Length[S]+1)&&(found==0),
           dto=0; dfrom=0;
           For[k=1,k<d+1,k++,
-            If[Length[Union[ToDiff[[k]],S[[j]]]]\[Equal]i,dto++];
-            If[Length[Union[FromDiff[[k]],S[[j]]]]\[Equal]i,dfrom++]];
+            If[Length[Union[ToDiff[[k]],S[[j]]]]==i,dto++];
+            If[Length[Union[FromDiff[[k]],S[[j]]]]==i,dfrom++]];
 
           If[(dfrom>i)||(dto>i),
             found=1; (*Print[S[j],"   ",ToDiff,FromDiff]*)];
@@ -6205,7 +6202,7 @@ Canc[X_]:=Module[
       ret=0;
       td=Total[Flatten[X]];
       ds = X[[1,1]]+X[[2,2]];
-      If[(Length[X]\[Equal]2)&&((td\[Equal]3)||((td\[Equal]2)&&EvenQ[ds])),
+      If[(Length[X]==2)&&((td==3)||((td==2)&&EvenQ[ds])),
         ret=1; (*Print["Found a Canc"]*)];
       ret];
 
@@ -6213,20 +6210,20 @@ TestGenus[K_PD,rut_,ag_]:=Module[
       {Y,Z,CDom,g,ngen,NoDiffs,SmallDiffs,i,j},
 
       Y=SortedStates[K,rut];
-      Z=Select[Y,#[[1]]\[Equal]ag&];
+      Z=Select[Y,#[[1]]==ag&];
 
       CDom[x_,y_]:=RelDom[K,rut,Z[[x,3]],Z[[y,3]]];
       (*Print[Z];*)
       g=-1;
-      If[Z[[1,2]]\[Equal](Z[[Length[Z],2]]-1),
+      If[Z[[1,2]]==(Z[[Length[Z],2]]-1),
         ngen=Length[Z]/2;
         If[Not[IntegerQ[ngen]],Print["Error in TestGenus"]];
         NoDiffs=Table[NoDisk[CDom[i+ngen,j]],{i,1,ngen},{j,1,ngen}];
         (*Print["NoDiffs= ", NoDiffs];*)
-        If[Clik[NoDiffs,0]\[Equal]1,g=Abs[ag]];
+        If[Clik[NoDiffs,0]==1,g=Abs[ag]];
         SmallDiffs=Table[SmallDisk[CDom[i+ngen,j]],{i,1,ngen},{j,1,ngen}];
         (*Print["SmallDiffs= ", SmallDiffs];*)
-        If[Canc[SmallDiffs]\[Equal]1, g=Abs[ag]-1];
+        If[Canc[SmallDiffs]==1, g=Abs[ag]-1];
         ];
       g];
 
@@ -6234,7 +6231,7 @@ FindClik[K_PD,rut_,ag_,ClDepth_]:=Module[
       {Y,Z,CDom,g,ngen,NoDiffs,SmallDiffs,i,j},
 
       Y=SortedStates[K,rut];
-      Z=Select[Y,#[[1]]\[Equal]ag&];
+      Z=Select[Y,#[[1]]==ag&];
       ngen=Length[Z]/2;
       CDom[x_,y_]:=RelDom[K,rut,Z[[x,3]],Z[[y,3]]];
 
@@ -6247,17 +6244,17 @@ UpperGCheck[K_PD,g_,ClDepth_]:=Module[
       {i,NPG,NMG,NGen, found},
 
       NPG=
-        Table[{Length[Select[SortedStates[K,i],#[[1]]\[Equal]g&]],i,g},{i,
+        Table[{Length[Select[SortedStates[K,i],#[[1]]==g&]],i,g},{i,
             2*Length[K]}];
       NMG=
-        Table[{Length[Select[SortedStates[K,i],#[[1]]\[Equal]-g&]],i,-g},{i,
+        Table[{Length[Select[SortedStates[K,i],#[[1]]==-g&]],i,-g},{i,
             2*Length[K]}];
       NGen=Sort[Join[NPG,NMG]];
 
       found=0; i=1;
-      While[(found\[Equal]0)&&(i<Length[NGen]+1),
+      While[(found==0)&&(i<Length[NGen]+1),
         found=FindClik[K,NGen[[i,2]],NGen[[i,3]],ClDepth];
-        If[found\[Equal]1,Print["Clik found ",NGen[[i]]]];
+        If[found==1,Print["Clik found ",NGen[[i]]]];
         i++];
       found];
 
@@ -6271,74 +6268,74 @@ ThreeGenus[K_PD]:=ThreeGenus[K] = Module[
         ret={-1,-1};
         AGen=Exponent[Alexander[K][t],t];
         SAGen=SAGenus[K];
-        If[AGen\[Equal]SAGen, ret={AGen,0},
+        If[AGen==SAGen, ret={AGen,0},
           i=1; flag=0; BigA={SAGen,1000}; groot={};
-          While[(i<2*Length[K]+1)&&(flag\[Equal]0),
+          While[(i<2*Length[K]+1)&&(flag==0),
             stat=SortedStates[K,i];
-            p={stat[[1,1]],Length[Select[stat,#[[1]]\[Equal]stat[[1,1]]&]]};
+            p={stat[[1,1]],Length[Select[stat,#[[1]]==stat[[1,1]]&]]};
             qflag=0;
             (*Print[BigA];*)
 
             If[(Abs[p[[1]]]<
-                    Abs[BigA[[1]]])||((Abs[p[[1]]]\[Equal]
+                    Abs[BigA[[1]]])||((Abs[p[[1]]]==
                         Abs[BigA[[1]]])&&(p[[2]]<BigA[[2]])),
               (*Print[BigA,"   ",p];*)
                BigA=p; qflag=1;groot={Flatten[{i,p}]},
 
-              If[(Abs[p[[1]]]\[Equal]Abs[BigA[[1]]])&&(p[[2]]==BigA[[2]]),
+              If[(Abs[p[[1]]]==Abs[BigA[[1]]])&&(p[[2]]==BigA[[2]]),
                 qflag=1;
                 groot=Append[groot,Flatten[{i,p}]]]];
 
-            If[(qflag\[Equal]1 )&& (p[[2]]\[Equal]2)&&(Abs[p[[1]]]>AGen),
+            If[(qflag==1 )&& (p[[2]]==2)&&(Abs[p[[1]]]>AGen),
               dom=RelDom[K,i,stat[[2,3]],stat[[1,3]]];
               (*Print[stat[[2]],stat[[1]],dom];*)
-              If[NoDisk[dom]\[Equal]1,flag=1;ret={Abs[p[[1]]],3}];
-              If[SmallDisk[dom]\[Equal]1, BigA={Abs[p[[1]]]-1,100};
+              If[NoDisk[dom]==1,flag=1;ret={Abs[p[[1]]],3}];
+              If[SmallDisk[dom]==1, BigA={Abs[p[[1]]]-1,100};
                 (*Print[BigA];*) groot={}];
               ];
 
             las=Length[stat];
 
             p={stat[[las,1]],
-                Length[Select[stat,#[[1]]\[Equal]stat[[las,1]]&]]};
+                Length[Select[stat,#[[1]]==stat[[las,1]]&]]};
             qflag=0;
 
             If[(Abs[p[[1]]]<
-                    Abs[BigA[[1]]])||((Abs[p[[1]]]\[Equal]Abs[BigA[[1]]])&&(p[
+                    Abs[BigA[[1]]])||((Abs[p[[1]]]==Abs[BigA[[1]]])&&(p[
                           [2]]<BigA[[2]])),
               (*Print[BigA,"   ",p];*)
               BigA=p; qflag=1;groot={Flatten[{i,p}]},
 
-              If[(Abs[p[[1]]]\[Equal]Abs[BigA[[1]]])&&(p[[2]]==BigA[[2]]),
+              If[(Abs[p[[1]]]==Abs[BigA[[1]]])&&(p[[2]]==BigA[[2]]),
                 qflag=1;
                 groot=Append[groot,Flatten[{i,p}]]]];
 
-            If[(qflag\[Equal]1 )&& (p[[2]]\[Equal]2)&&(Abs[p[[1]]]>AGen),
+            If[(qflag==1 )&& (p[[2]]==2)&&(Abs[p[[1]]]>AGen),
               dom=RelDom[K,i,stat[[las,3]],stat[[las-1,3]]];
               (*Print[stat[[las]],stat[[las-1]],dom];*)
-              If[NoDisk[dom]\[Equal]1,flag=1;ret={Abs[p[[1]]],3}];
+              If[NoDisk[dom]==1,flag=1;ret={Abs[p[[1]]],3}];
 
-              If[SmallDisk[dom]\[Equal]1, BigA={Abs[p[[1]]]-1,1000};
+              If[SmallDisk[dom]==1, BigA={Abs[p[[1]]]-1,1000};
                 groot={}];
               ];
 
-            If[Abs[BigA[[1]]]\[Equal]AGen,flag=1; ret={AGen,1}];
+            If[Abs[BigA[[1]]]==AGen,flag=1; ret={AGen,1}];
             i++];
 
           MaxG=Abs[BigA[[1]]];
-          If[flag\[Equal]0,
+          If[flag==0,
             i=1;
-            While[(flag\[Equal]0)&&(i<Length[groot]+1),
+            While[(flag==0)&&(i<Length[groot]+1),
               g=TestGenus[K,groot[[i,1]],groot[[i,2]]];
               (*Print["Trying  ",groot[[i,1]],"   ",groot[[i,2]]];*)
-              If[g\[Equal]MaxG,ret={g,3}; flag=1];
-              If[g\[Equal]AGen, ret={g,4};flag=1];
+              If[g==MaxG,ret={g,3}; flag=1];
+              If[g==AGen, ret={g,4};flag=1];
               i++];
             ];
 
-          If[flag\[Equal]0,ret={{MaxG,AGen},2}];
+          If[flag==0,ret={{MaxG,AGen},2}];
           ];
-        First[ret] /. {max_Integer, min_Integer} \[RuleDelayed] {min, max}
+        First[ret] /. {max_Integer, min_Integer} := {min, max}
         ];
 
 End[]; EndPackage[];
@@ -6436,7 +6433,7 @@ fContoKTGauss[Ul_String]:=Module[{mm,nn,ss,vv,i},
     SwitchDirectories[
       EnsurePolyBaseVisible[
         mm=LinKnots`fGaussExtSigns[Ul];
-        nn=LinKnots`fGaussExtSigns[StringReplace[Ul,"-"\[Rule]""]];
+        nn=LinKnots`fGaussExtSigns[StringReplace[Ul,"-"->""]];
         ];
       nn=Map[Sign,Flatten[mm]]*Map[Sign,Flatten[nn]];
       vv=Table[nn[[i]]*(-1)^i,{i,Length[nn]}]*Abs[Flatten[mm]];
@@ -6508,7 +6505,7 @@ KnDowToKTGauss[Ul_List]:=Module[{ss,gg,sc,i},
             1]]];
     gg=Table[gg[[i]]*(-1)^i,{i,Length[gg]}];
     gg=Table[If[MemberQ[sc,i],-gg[[i]],gg[[i]]],{i,Length[gg]}];
-    GaussCode@@If[Length[Ul[[1]]]\[Equal]1,gg,iteratedTake[gg,2Ul[[1]]]]
+    GaussCode@@If[Length[Ul[[1]]]==1,gg,iteratedTake[gg,2Ul[[1]]]]
     ]
 
 DowkerToKTGauss[Ul_List]:=Module[{ss,ss1,i},ss=LinKnots`fSignsKL[Abs[Ul]];
@@ -6612,12 +6609,12 @@ Slidable[a_,b_,m_List] := Module[
           Total[h /@ Select[
                   Sort[Flatten[m]],
                   (Min[a,b]<#<Max[a,b])&
-                  ]] /. 2h[_] \[Rule] 0
+                  ]] /. 2h[_] -> 0
           ]
         ]
       ];
 
-Options[ArcPresentation] = {Reduce \[Rule] Infinity};
+Options[ArcPresentation] = {Reduce -> Infinity};
 ArcPresentation[ml_MorseLink, opts___Rule] := Module[
       {
         ActiveVerts, VertOrdering, vc,out,m,n,k,p,b,c,br,bl,r, l,
@@ -6626,11 +6623,11 @@ ArcPresentation[ml_MorseLink, opts___Rule] := Module[
         },
       ActiveVerts={}; VertOrdering={}; vc=0;
       out = (List @@ ml) /. {
-              Cup[m_,n_] \[RuleDelayed] (
+              Cup[m_,n_] := (
                   k = Min[m,n];
                   ActiveVerts = Insert[ActiveVerts, ++vc, k];
                   ActiveVerts = Insert[ActiveVerts, ++vc, k+1];
-                  If[k\[Equal]1,
+                  If[k==1,
                     VertOrdering={vc-1, vc}~Join~VertOrdering,
                     {{p}} = Position[VertOrdering, ActiveVerts[[k-1]]];
                     VertOrdering = Insert[VertOrdering, vc-1, p+1];
@@ -6638,21 +6635,21 @@ ArcPresentation[ml_MorseLink, opts___Rule] := Module[
                     ];
                   {m,n}-k+vc-1
                   ),
-              X[n_, Under, b_, c_] \[RuleDelayed]  (
+              X[n_, Under, b_, c_] :=  (
                   bl=ActiveVerts[[n]];
                   ActiveVerts = Insert[Delete[ActiveVerts,  n], ++vc, n+1];
                   {{p}} = Position[VertOrdering, ActiveVerts[[n]]];
                   VertOrdering = Insert[VertOrdering,  vc, p+1];
                   If[b===Up, {bl, vc}, {vc,bl}]
                   ),
-              X[n_, Over, b_, c_] \[RuleDelayed]  (
+              X[n_, Over, b_, c_] :=  (
                   br=ActiveVerts[[n+1]];
                   ActiveVerts = Insert[Delete[ActiveVerts,  n+1], ++vc, n];
                   {{p}} = Position[VertOrdering, ActiveVerts[[n+1]]];
                   VertOrdering = Insert[VertOrdering,  vc, p];
                   If[c===Up, {br, vc}, {vc,br}]
                   ),
-              Cap[m_, n_] \[RuleDelayed] (
+              Cap[m_, n_] := (
                   r={ActiveVerts[[m]], ActiveVerts[[n]]};
                   ActiveVerts = Delete[ActiveVerts, {{m}, {n}}];
                   r
@@ -6665,28 +6662,28 @@ ArcPresentation[ml_MorseLink, opts___Rule] := Module[
 
               AP[l___, {a_, b_}, m___, {b_,c_},
                     r___] /; (a\[NotEqual]c &&
-                      Slidable[a,b,{m}]) \[RuleDelayed] (
+                      Slidable[a,b,{m}]) := (
                   ++redsdone; AppendTo[UnneededVerts, b];
                   AP[l, m, {a,c}, r]
                   ),
 
               AP[l___, {b_, a_}, m___, {c_,b_},
                     r___] /; (a\[NotEqual]c &&
-                      Slidable[a,b,{m}]) \[RuleDelayed] (
+                      Slidable[a,b,{m}]) := (
                   ++redsdone; AppendTo[UnneededVerts, b];
                   AP[l, m, {c, a}, r]
                   ),
 
               AP[l___, {b_, c_}, m___, {a_,b_},
                     r___] /; (a\[NotEqual]c &&
-                      Slidable[a,b,{m}]) \[RuleDelayed] (
+                      Slidable[a,b,{m}]) := (
                   ++redsdone; AppendTo[UnneededVerts, b];
                   AP[l,  {a,c}, m, r]
                   ),
 
               AP[l___, {c_, b_}, m___, {b_,a_},
                     r___] /; (a\[NotEqual]c &&
-                      Slidable[a,b,{m}]) \[RuleDelayed] (
+                      Slidable[a,b,{m}]) := (
                   ++redsdone; AppendTo[UnneededVerts, b];
                   AP[l,  {c, a}, m, r]
                   )
@@ -6700,7 +6697,7 @@ ArcPresentation[ml_MorseLink, opts___Rule] := Module[
       ];
 ArcPresentation[K_, opts___Rule] := ArcPresentation[MorseLink[K], opts];
 
-Options[Draw] = {OverlayMatrix \[Rule] Null};
+Options[Draw] = {OverlayMatrix -> Null};
 Draw[ap_ArcPresentation, opts___Rule]  := Module[
     {
       l,p1,p2,k, V,
