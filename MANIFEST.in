@@ -1,0 +1,2 @@
+recursive-include mathics/packages/KnotTheory *.m
+recursive-include mathics/packages/KnotTheory/Kernel *.m
